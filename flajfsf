@@ -1,0 +1,1 @@
+get ssl: certbot --manual --preferred-challenges dns certonly
