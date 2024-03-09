@@ -1,0 +1,130 @@
+import requests
+import json
+import sys
+# Cloudflare API 认证信息
+api_key = "xxxxx"
+email="xxxx@gmail.com"
+account_id="xxxx"
+# 域名和子域名信息
+about_domain=[["fsfsd.example.cn","127.1.0.1","A","c7daef94d13f8a0cbc21d0b0ae897c98"],
+              ["wsfssdfsdfww.example.cn","127.2.0.1","A","c7daef94d13f8a0cbc21d0b0ae897c98"]]
+
+
+
+
+
+def add_domain_to_cloudflare():
+    with open("1.txt",'r') as f:
+        ttt=f.readlines()
+        for domain_name in ttt:
+            print(domain_name)
+            #domain_name=i.rstrip().split("")
+            url = "https://api.cloudflare.com/client/v4/zones"
+            headers = {
+                "X-Auth-Key": api_key,
+                "X-Auth-Email": email,
+                "Content-Type": "application/json"
+            }
+            data = {
+                "name": domain_name,
+                "jump_start": True
+            }
+            response = requests.post(url, headers=headers, data=json.dumps(data))
+            if response.status_code == 200:
+                print("Domain added to Cloudflare successfully!")
+            else:
+                print("Error adding domain to Cloudflare:", response.text)
+
+
+
+
+#添加子域名
+def  subdomain():
+    with open("1.txt", "r") as f:
+        tttt = f.readlines()
+        for x in tttt:
+            xxt = x.rstrip().split(",")
+            print(xxt)
+            #record_response = requests.get(
+            #    f"https://api.cloudflare.com/client/v4/zones/{xxt[3]}/dns_records/?name={xxt[0]}",
+            #    headers={
+            #        "X-Auth-Email": email,
+            #        "X-Auth-Key": api_key,
+            #        "Content-Type": "application/json"
+            #    })
+            #record_id = record_response.json()["result"][0]["id"]
+
+            # 创建子域名的 记录
+            endpoint = f"https://api.cloudflare.com/client/v4/zones/{xxt[3]}/dns_records"
+            print(endpoint)
+            headers = {
+                    "X-Auth-Email": email,
+                "X-Auth-Key": api_key,
+                "Content-Type": "application/json"
+            }
+            data = {
+                "type": xxt[2],
+                "name": xxt[0],
+                "content": xxt[1],
+                "ttl": 3600,
+                "proxied": False
+            }
+            response = requests.post(endpoint, headers=headers, json=data)
+            if response.status_code == 200:
+                print("子域名添加成功！")
+            else:
+                print("子域名添加失败。错误信息：", response.json())
+
+#更新域名解析
+def update_domain():
+    with open("1.txt", "r") as f:
+        tttt = f.readlines()
+        for x in tttt:
+            xxt = x.rstrip().split(",")
+            print(xxt)
+
+            record_response = requests.get(
+                f"https://api.cloudflare.com/client/v4/zones/{xxt[3]}/dns_records/?name={xxt[0]}",
+                headers={
+                    "X-Auth-Email": email,
+                    "X-Auth-Key": api_key,
+                    "Content-Type": "application/json"
+                })
+            record_id = record_response.json()["result"][0]["id"]
+            print(record_id)
+
+            update_uri=f"https://api.cloudflare.com/client/v4/zones/{xxt[3]}/dns_records/{record_id}"
+
+            headers = {
+                    "X-Auth-Email": email,
+                "X-Auth-Key": api_key,
+                "Content-Type": "application/json"
+            }
+            data = {
+                "type": xxt[2],
+                "name": xxt[0],
+                "content": xxt[1],
+            "ttl": 3600,
+            "proxied": False
+            }
+
+            response = requests.put(update_uri, headers=headers, json=data)
+            print(response)
+
+
+ttt="""
+1.cf添加新的域名：在脚本目录下创建1.txt，一行一个域名
+2. 增加子域名：cf上已经填加了域名，要创建子域名，在脚本目录下创建2.txt，一行一个个域名配置，格式如：wsfsfww.example.cn,127.1.0.1,A,c7daef94d13f8a0cbc21d0b0ae897c98
+3. 更新子域名解析：对已有的域名进行解析更改
+"""
+print(ttt)
+choise_option=input(":")
+if choise_option == "1":
+    add_domain_to_cloudflare()
+elif choise_option == "2":
+    subdomain()
+elif choise_option == "3":
+    update_domain()
+else:
+    print("无此操作,即将退出脚本执行")
+    sys.exit()
