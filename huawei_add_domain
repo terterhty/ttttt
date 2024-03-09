@@ -64,4 +64,34 @@ def add_domain_to_huawei():
                 print(e.request_id)
                 print(e.error_code)
                 print(e.error_msg)
+def refresh_cash():
+
+    ak = "kkkey"
+    sk ="value"
+    credentials = GlobalCredentials(ak, sk)  \
+
+    client = CdnClient.new_builder() \
+        .with_credentials(credentials) \
+        .with_region(CdnRegion.value_of("cn-north-1")) \
+        .build()
+
+    try:
+        request = CreateRefreshTasksRequest()
+        #listUrlsRefreshTask = ["https://example.cn/","https://example.cn/","http://example.cn/"]
+        listUrlsRefreshTask = ["https://example.cn/","https://example.cn/","http://example.cn/"]
+        refreshTaskbody = RefreshTaskRequestBody(
+            urls=listUrlsRefreshTask
+        )
+        request.body = RefreshTaskRequest(
+            refresh_task=refreshTaskbody
+        )
+        response = client.create_refresh_tasks(request)
+        print(response)
+    except exceptions.ClientRequestException as e:
+        print(e.status_code)
+        print(e.request_id)
+        print(e.error_code)
+        print(e.error_msg)
+
+refresh_cash()
 add_domain_to_huawei()
