@@ -1,0 +1,67 @@
+# coding: utf-8
+
+from huaweicloudsdkcore.auth.credentials import GlobalCredentials
+from huaweicloudsdkcdn.v1.region.cdn_region import CdnRegion
+from huaweicloudsdkcore.exceptions import exceptions
+from huaweicloudsdkcdn.v1 import *
+
+
+
+def add_domain_to_huawei():
+    tttt='''
+    1.exampe@163.com   华为cdn1
+    2.exampe2@163.com    华为cdn2
+    3.exampe3@163.com      华为cdn3
+
+    注意：单个域名自己手动添加，此脚本不支持单个域名添加
+    '''
+    print(tttt)
+    get_input=input("从以上选择需要添加的账号的序号，比如 1：")
+    if get_input == "1":
+        ak = "key1"
+        sk= "value1"
+    elif get_input == "2":
+        ak = "key2"
+        sk= "value2"
+    elif get_input == "3":
+        ak = "key3"
+        sk= "value3"
+    else:
+        print("填正确的序号")
+    with open("huawei.txt","r")  as f:
+        tt=f.readlines()
+        for i in  tt:
+            sss=i.rstrip().split(",")
+            credentials = GlobalCredentials(ak, sk) \
+
+            client = CdnClient.new_builder() \
+        .with_credentials(credentials) \
+        .with_region(CdnRegion.value_of("cn-north-1")) \
+        .build()
+
+            try:
+                request = CreateDomainRequest()
+                listSourcesDomain = [
+                    Sources(
+                        origin_type=sss[2],
+                        ip_or_domain=sss[3],
+                        active_standby=1
+                    )
+                ]
+                domainbody = DomainBody(
+                    domain_name=sss[0],
+                    business_type=sss[1],
+                    sources=listSourcesDomain,
+                    service_area=sss[4]
+                )
+                request.body = CreateDomainRequestBody(
+                    domain=domainbody
+                )
+                response = client.create_domain(request)
+                print(response)
+            except exceptions.ClientRequestException as e:
+                print(e.status_code)
+                print(e.request_id)
+                print(e.error_code)
+                print(e.error_msg)
+add_domain_to_huawei()
