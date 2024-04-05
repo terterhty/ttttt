@@ -1,52 +1,84 @@
+import telebot
 from selenium  import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import  ActionChains
 import time
-import telegram
-# -*- coding: UTF-8 -*-
-driver=webdriver.Chrome()
-option = webdriver.ChromeOptions()
-driver.get("https://www.itdog.cn/http/")
-
-box=driver.find_element(By.ID,"host")
-box.send_keys("https://tgrr.comer.cn/")
-
-box2=driver.find_element(By.CSS_SELECTOR,"#screenshots > div > div > div > div:nth-child(3) > div > div > div > div:nth-child(1) > button.btn.btn-primary.ml-2.mb-3")
-box2.click()
-
-
-time.sleep(10)
-
-#screenshot=driver.get_screenshot_as_png()
-actionchains=ActionChains(driver)
-#actionchains.move_to_element(driver.find_element(By.CSS_SELECTOR,"#china_map > div:nth-child(1) > canvas")).perform()
-actionchains.move_to_element(driver.find_element(By.XPATH,"/html/body/div[4]/div/div/div/div/div/div[5]/div/div[2]/div")).perform()
-driver.maximize_window()
-time.sleep(2)
-driver.save_screenshot(filename='1.png')
-
-driver.quit()
-
-
+import os
 import requests
-import asyncio
-requests.post(url="https://api.telegram.org/bot7028104493:bAFMAERCUZwerweDMewrweLkS9TRUc-N4/sendPhoto?chat_id=-4157853652&photo=./1.png&caption=文字说明")
+import dns.resolver
+import schedule
+h5_domain="maumi.jjjjjg.cn"
+img_domain="ttutututut.jjjjjg.cn"
+apk_domain="gtpapk.jjjjjg.cn"
+# -*- coding: utf-8
+bot = telebot.TeleBot("7028104493:AAFMAERCUZjeb9X8F3DMgoFeLkS9TRUc-N4", parse_mode=None)
 def send_pic():
-    try:
-        bot = telegram.Bot(token='7028104493:AAFMAERCUZjeb9X8F3DMgoFeLkS9TRUc-N4')
-        chatid = '-4157853652'
-        phptopath = 'C:\\Users\\ADMIN1103\\PycharmProjects\\monitor-domain\\1.png'
-        asyncio.run(bot.send_message(chat_id=chatid,text="域名：https://tgr.comforter.cn/ 网络状况"))
-        if telegram.error.TimedOut:
-            pass
-        asyncio.run(bot.send_photo(chat_id=chatid,photo=open(phptopath,'rb')))
-    except (RuntimeError,telegram.error.NetworkError,telegram.error.TimedOut):
-        asyncio.run(bot.send_photo(chat_id=chatid, photo=open(phptopath, 'rb')))
-        bot.send_message(chat_id=chatid, photo=open(phptopath, 'rb'))
-        if telegram.error.TimedOut:
-            pass
-    time.sleep(3600)
-#send_pic()
-while True:
+    file_path = "1.png"
+    if os.path.exists(file_path):
 
-    send_pic()
+        os.remove(".\\1.png")
+    else:
+        pass
+    driver = webdriver.Chrome()
+    option = webdriver.ChromeOptions()
+    driver.get("https://www.itdog.cn/http/")
+
+    box = driver.find_element(By.ID, "host")
+    box.send_keys("https://" + h5_domain)
+
+    box2 = driver.find_element(By.CSS_SELECTOR,
+                               "#screenshots > div > div > div > div:nth-child(3) > div > div > div > div:nth-child(1) > button.btn.btn-primary.ml-2.mb-3")
+    box2.click()
+
+    time.sleep(6)
+
+    # screenshot=driver.get_screenshot_as_png()
+    actionchains = ActionChains(driver)
+    # actionchains.move_to_element(driver.find_element(By.CSS_SELECTOR,"#china_map > div:nth-child(1) > canvas")).perform()
+    actionchains.move_to_element(
+        driver.find_element(By.XPATH, "/html/body/div[4]/div/div/div/div/div/div[5]/div/div[2]/div")).perform()
+    driver.maximize_window()
+    time.sleep(3)
+
+    driver.save_screenshot(filename='1.png')
+
+    driver.quit()
+    #bot = telebot.TeleBot("7028104493:AAFMAERCUZjeb9X8F3DMgoFeLkS9TRUc-N4", parse_mode=None)
+    bot.send_message('-4157853652','渠道域名:' + h5_domain + '网络状况')
+    photo=open("1.png",'rb')
+    bot.send_photo('-4157853652',photo)
+
+def domain_check_avaible(domain):
+    try:
+        headerss={"Cache-Control":"no-cache"}
+        h5_status=requests.get("https://" + h5_domain,headers=headerss)
+        print(h5_status.status_code)
+        if h5_status.status_code == 200:
+            print("ok")
+        else:
+            bot.send_message("-4157853652",domain + "域名异常，请查看")
+    except requests.exceptions.ConnectionError:
+        pass
+
+def domian_dns(domain):
+    try:
+        answers = dns.resolver.resolve(h5_domain, 'CNAME')
+        for i in answers:
+            print(answers[0])
+    except dns.resolver.NXDOMAIN:
+        bot.send_message("-4157853652", domain + " dns解析异常，请查看")
+    if dns.resolver.LifetimeTimeout:
+        pass
+
+send_pic()
+schedule.every(1).minute.do(domain_check_avaible,h5_domain)
+schedule.every(1).minute.do(domain_check_avaible,img_domain)
+schedule.every(1).minute.do(domain_check_avaible,apk_domain)
+schedule.every(1).minute.do(domian_dns,h5_domain)
+schedule.every(1).minute.do(domian_dns,img_domain)
+schedule.every(1).minute.do(domian_dns,apk_domain)
+schedule.every(15).minutes.do(send_pic)
+
+while True:
+    schedule.run_pending()
+    time.sleep(1)
