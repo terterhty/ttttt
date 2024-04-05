@@ -7,9 +7,9 @@ import os
 import requests
 import dns.resolver
 import schedule
-h5_domain="maumi.jjjjjg.cn"
-img_domain="ttutututut.jjjjjg.cn"
-apk_domain="gtpapk.jjjjjg.cn"
+h5_domain="mawerwumi.jwerg.cn"
+img_domain="twertut.jwejjrwejg.cn"
+apk_domain="gtweryapuk.jytjg.cn"
 # -*- coding: utf-8
 bot = telebot.TeleBot("7028104493:AAFMAERCUZjeb9X8F3DMgoFeLkS9TRUc-N4", parse_mode=None)
 def send_pic():
