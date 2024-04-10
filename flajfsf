@@ -1,1 +1,4 @@
-get ssl: certbot --manual --preferred-challenges dns certonly
+get ssl: certbot --manual --preferred-challenges dns certonly 
+
+certbot  certonly    -d s3.nirmnsre.cn  #nginx配置域名，并解析后直接生成证书
+certbot  --nginx   -d  s3.nirmnsre.cn  --nginx-server-root=/www/server/nginx/nginx/conf  #置顶nginx配置文件，生成的ssl证书配置会配置到相应的nginx配置文件中
