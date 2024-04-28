@@ -11,8 +11,6 @@ about_domain=[["fsfsd.example.cn","127.1.0.1","A","c7daef94d13f8a0cbc21d0b0ae897
 
 
 
-
-
 def add_domain_to_cloudflare():
     with open("1.txt",'r') as f:
         ttt=f.readlines()
@@ -40,22 +38,28 @@ def add_domain_to_cloudflare():
 
 #添加子域名
 def  subdomain():
-    with open("1.txt", "r") as f:
+    with open("2.txt", "r") as f:
         tttt = f.readlines()
         for x in tttt:
             xxt = x.rstrip().split(",")
-            print(xxt)
-            #record_response = requests.get(
-            #    f"https://api.cloudflare.com/client/v4/zones/{xxt[3]}/dns_records/?name={xxt[0]}",
-            #    headers={
-            #        "X-Auth-Email": email,
-            #        "X-Auth-Key": api_key,
-            #        "Content-Type": "application/json"
-            #    })
-            #record_id = record_response.json()["result"][0]["id"]
+            # 获取zoneid
+            params = {'name': x}
+            iddd = requests.get(
+                f"https://api.cloudflare.com/client/v4/zones/",
+                headers={
+                    "X-Auth-Email": email,
+                    "X-Auth-Key": api_key,
+                    "Content-Type": "application/json"
+                }, params=params)
+
+            dataaa = iddd.json()
+            get_zone_id=dataaa['result'][0]['id']
+            print(dataaa['result'][0]['id'])
+
 
             # 创建子域名的 记录
-            endpoint = f"https://api.cloudflare.com/client/v4/zones/{xxt[3]}/dns_records"
+            print(xxt)
+            endpoint = f"https://api.cloudflare.com/client/v4/zones/{get_zone_id}/dns_records"
             print(endpoint)
             headers = {
                     "X-Auth-Email": email,
@@ -67,7 +71,7 @@ def  subdomain():
                 "name": xxt[0],
                 "content": xxt[1],
                 "ttl": 3600,
-                "proxied": False
+                "proxied": True
             }
             response = requests.post(endpoint, headers=headers, json=data)
             if response.status_code == 200:
@@ -83,8 +87,26 @@ def update_domain():
             xxt = x.rstrip().split(",")
             print(xxt)
 
+            # 获取zoneid
+            params = {'name': x}
+            iddd = requests.get(
+                f"https://api.cloudflare.com/client/v4/zones/",
+                headers={
+                    "X-Auth-Email": email,
+                    "X-Auth-Key": api_key,
+                    "Content-Type": "application/json"
+                }, params=params)
+
+            dataaa = iddd.json()
+            get_zone_id=dataaa['result'][0]['id']
+            print(dataaa['result'][0]['id'])
+
+
+
+
+
             record_response = requests.get(
-                f"https://api.cloudflare.com/client/v4/zones/{xxt[3]}/dns_records/?name={xxt[0]}",
+                f"https://api.cloudflare.com/client/v4/zones/" + get_zone_id + "/dns_records/?name=" + x,
                 headers={
                     "X-Auth-Email": email,
                     "X-Auth-Key": api_key,
@@ -93,7 +115,7 @@ def update_domain():
             record_id = record_response.json()["result"][0]["id"]
             print(record_id)
 
-            update_uri=f"https://api.cloudflare.com/client/v4/zones/{xxt[3]}/dns_records/{record_id}"
+            update_uri=f"https://api.cloudflare.com/client/v4/zones/{get_zone_id}/dns_records/{record_id}"
 
             headers = {
                     "X-Auth-Email": email,
@@ -105,11 +127,12 @@ def update_domain():
                 "name": xxt[0],
                 "content": xxt[1],
             "ttl": 3600,
-            "proxied": False
+            "proxied": True
             }
 
             response = requests.put(update_uri, headers=headers, json=data)
             print(response)
+
 
 
 ttt="""
