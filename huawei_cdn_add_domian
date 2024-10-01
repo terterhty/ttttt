@@ -119,9 +119,9 @@ def change_domain_config(cert_name,cert_domain):
 
 
     # 定义远程服务器的信息
-    hostname = '18.166.80.122'  # 远程服务器IP
-    username = 'ubuntu'  # 远程服务器用户名
-    private_key_path = 'C:\\Users\\ADMIN1103\\Desktop\\555\\hk-hongdengqu.pem'  # 私钥文件的路径
+    hostname = ''  # 远程服务器IP
+    username = ''  # 远程服务器用户名
+    private_key_path = 'C:\\Users\\Desktop\\555\\pri.pem'  # 私钥文件的路径
     command = f'sudo cat /etc/letsencrypt/live/{cert_domain}/privkey.pem'  # 你想要在远程服务器上执行的命令
     command2 = f'sudo cat /etc/letsencrypt/live/{cert_domain}/fullchain.pem'
     # 创建SSH客户端对象
@@ -207,4 +207,4 @@ def change_domain_config(cert_name,cert_domain):
 
 
 add_domain()
-#change_domain_config(cert_name,"test.688828l.com")
+#change_domain_config(cert_name,"test.test.test")
