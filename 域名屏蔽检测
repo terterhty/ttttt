@@ -44,9 +44,9 @@ def send_pic():
 
     driver.quit()
     #bot = telebot.TeleBot("7028104493:AAFMAERCUZjeb9X8F3DMgoFeLkS9TRUc-N4", parse_mode=None)
-    bot.send_message('-4157853652','渠道域名:' + h5_domain + '网络状况')
+    bot.send_message('-4153437853342323652','渠道域名:' + h5_domain + '网络状况')
     photo=open("1.png",'rb')
-    bot.send_photo('-4157853652',photo)
+    bot.send_photo('-4153437853342323652',photo)
 
 def domain_check_avaible(domain):
     try:
@@ -66,7 +66,7 @@ def domian_dns(domain):
         for i in answers:
             print(answers[0])
     except dns.resolver.NXDOMAIN:
-        bot.send_message("-4157853652", domain + " dns解析异常，请查看")
+        bot.send_message("-4153437853342323652", domain + " dns解析异常，请查看")
     if dns.resolver.LifetimeTimeout:
         pass
 
