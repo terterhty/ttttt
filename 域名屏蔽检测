@@ -11,7 +11,7 @@ h5_domain="mawerwumi.jwerg.cn"
 img_domain="twertut.jwejjrwejg.cn"
 apk_domain="gtweryapuk.jytjg.cn"
 # -*- coding: utf-8
-bot = telebot.TeleBot("7028104493:AAFMAERCUZjeb9X8F3DMgoFeLkS9TRUc-N4", parse_mode=None)
+bot = telebot.TeleBot("7028104493:AAFMAERCUZjeb9X8Fwewew3DMgoFeLkS9TRUc-N4", parse_mode=None)
 def send_pic():
     file_path = "1.png"
     if os.path.exists(file_path):
