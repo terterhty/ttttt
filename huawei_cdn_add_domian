@@ -1,0 +1,210 @@
+# coding: utf-8
+import paramiko
+import os
+from huaweicloudsdkcore.auth.credentials import GlobalCredentials
+from huaweicloudsdkcdn.v1.region.cdn_region import CdnRegion
+from huaweicloudsdkcore.exceptions import exceptions
+from huaweicloudsdkcdn.v1 import *
+blacklist=[]
+with open('huawei_black_ip.txt', 'r') as file:
+    for line in file:
+        blacklist.append(line)
+
+print(blacklist)
+cleaned_ip_list = [ip.strip() for ip in blacklist]
+
+ak = ""
+sk = ""
+credentials = GlobalCredentials(ak, sk)
+client = CdnClient.new_builder() \
+    .with_credentials(credentials) \
+    .with_region(CdnRegion.value_of("cn-north-1")) \
+    .build()
+
+
+def add_domain():
+    with open('huawei.txt', 'r') as file:
+        for line in file:
+            # 使用逗号分割每一行
+            parts = line.strip().split(',')
+            # 打印第一列，即域名
+            print(parts[0])
+            try:
+                request = CreateDomainRequest()
+                listSourcesDomain = [
+                    Sources(
+                        ip_or_domain=parts[3],
+                        origin_type=parts[2],
+                        active_standby=1,
+                        enable_obs_web_hosting=0
+                    )
+                ]
+                domainbody = DomainBody(
+                    domain_name=parts[0],
+                    business_type=parts[1],
+                    sources=listSourcesDomain,
+                    service_area=parts[4]
+                )
+                request.body = CreateDomainRequestBody(
+                    domain=domainbody
+                )
+                response = client.create_domain(request)
+                print(response)
+
+               # print(type(response['domain']))
+               # print(response['domain'][0])
+                domainid=response.domain.id
+                cname=response.domain.cname
+                add_blacklist(domainid)
+                with open('2.txt', 'a') as xxx:
+                    xxx.write(parts[0] + "," + cname + "," + "CNAME\n")
+
+                #添加缓存
+                request = UpdateCacheRulesRequest()
+                request.domain_id = domainid
+                listRulesCacheConfig = [
+                    Rules(
+                        rule_type=2,
+                        content="/Api",
+                        ttl=0,
+                        ttl_type=1,
+                        priority=98
+                    ),
+                    Rules(
+                        rule_type=0,
+                        ttl=7,
+                        ttl_type=4,
+                        priority=90
+                    )
+                ]
+                cacheConfigbody = CacheConfigRequest(
+                    ignore_url_parameter=True,
+                    follow_origin=False,
+                    rules=listRulesCacheConfig
+                )
+                request.body = CacheConfigRequestBody(
+                    cache_config=cacheConfigbody
+                )
+                response = client.update_cache_rules(request)
+                print(response)
+
+
+            except exceptions.ClientRequestException as e:
+                print(e.status_code)
+                print(e.request_id)
+                print(e.error_code)
+                print(e.error_msg)
+
+
+def add_blacklist(domainid):
+    try:
+        request = UpdateBlackWhiteListRequest()
+        request.domain_id = domainid
+        listIpListbody = cleaned_ip_list
+        request.body = BlackWhiteListBody(
+            ip_list=listIpListbody,
+            type=1
+        )
+        response = client.update_black_white_list(request)
+        print(response)
+    except exceptions.ClientRequestException as e:
+        print(e.status_code)
+        print(e.request_id)
+        print(e.error_code)
+        print(e.error_msg)
+
+
+
+def change_domain_config(cert_name,cert_domain):
+
+
+    # 定义远程服务器的信息
+    hostname = '18.166.80.122'  # 远程服务器IP
+    username = 'ubuntu'  # 远程服务器用户名
+    private_key_path = 'C:\\Users\\ADMIN1103\\Desktop\\555\\hk-hongdengqu.pem'  # 私钥文件的路径
+    command = f'sudo cat /etc/letsencrypt/live/{cert_domain}/privkey.pem'  # 你想要在远程服务器上执行的命令
+    command2 = f'sudo cat /etc/letsencrypt/live/{cert_domain}/fullchain.pem'
+    # 创建SSH客户端对象
+    client = paramiko.SSHClient()
+    # 自动添加远程服务器的主机密钥 (避免手动确认)
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    try:
+        # 使用私钥文件连接远程服务器
+        private_key = paramiko.RSAKey.from_private_key_file(private_key_path)
+        client.connect(hostname, username=username, pkey=private_key)
+        # 执行远程命令
+        stdin1, stdout1, stderr1 = client.exec_command(command)
+        stdin, stdout, stderr = client.exec_command(command2)
+        # 打印输出结果
+        print("标准输出:")
+        prikey = stdout.read().decode()
+        print(prikey)
+        cert = stdout1.read().decode()
+        print(cert)
+        print("错误输出:")
+        print(stderr.read().decode())
+    finally:
+        # 关闭连接
+        client.close()
+
+
+
+
+
+    try:
+        request = UpdateDomainFullConfigRequest()
+        request.domain_name = "www.werw.com"
+        listErrorCodeCacheConfigs = [
+            ErrorCodeCache(
+                code=404,
+                ttl=0
+            ),
+            ErrorCodeCache(
+                code=502,
+                ttl=0
+            ),
+            ErrorCodeCache(
+                code=504,
+                ttl=0
+            )
+        ]
+        compressConfigs = Compress(
+            status="on",
+            type="gzip"
+        )
+        httpsConfigs = HttpPutBody(
+            https_status="on",
+            certificate_name=cert_name,
+            certificate_value=cert,
+            private_key=prikey,
+            http2_status="on"
+        )
+        listHttpResponseHeaderConfigs = [
+            HttpResponseHeader(
+                name="Access-Control-Allow-Origin",
+                value="*"
+            )
+        ]
+        configsbody = Configs(
+            http_response_header=listHttpResponseHeaderConfigs,
+            https=httpsConfigs,
+            compress=compressConfigs,
+            ipv6_accelerate=1,
+            error_code_cache=listErrorCodeCacheConfigs
+        )
+        request.body = ModifyDomainConfigRequestBody(
+            configs=configsbody
+        )
+        response = client.update_domain_full_config(request)
+        print(response)
+    except exceptions.ClientRequestException as e:
+        print(e.status_code)
+        print(e.request_id)
+        print(e.error_code)
+        print(e.error_msg)
+
+
+
+
+add_domain()
+#change_domain_config(cert_name,"test.688828l.com")
